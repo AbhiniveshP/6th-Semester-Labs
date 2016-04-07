@@ -1,0 +1,9 @@
+echo "Enter a range of two numbers:"
+read a b
+ for ((n=$a; n <= $b; n++))
+ do
+     if [ `expr $n % 2` -eq 0 ]
+     then
+         echo "$n"
+     fi
+ done

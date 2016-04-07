@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="510" height="510" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+var width = 510;
+var height = 510;
+
+var x = width/2, y = height-99, vx = 6, vy = -8, r = 15, step_mov = 2;
+
+// THIS IS THE MAIN RECTANGLE...
+ctx.fillStyle = "#ff8000";
+ctx.fillRect(0, 0, 510, 510);
+
+
+// THESE ARE FOUR BLACK BORDERS...
+ctx.fillStyle = "#000000";
+ctx.fillRect(0, 0, width, height/30);                  //upper border
+ctx.fillRect(0, 0, width/30, height);                  //left border 
+ctx.fillRect(width - width/30, 0, width/30, height);   //right border
+ctx.fillRect(0, height - height/30, width, height/30); //lower border
+
+function line(x,y,p,q){
+		
+	  ctx.beginPath();
+      ctx.moveTo(x,y);
+      ctx.lineTo(p,q);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
+	}
+
+function arc(x,y,r,sAngle,eAngle,fill){
+		
+	  ctx.beginPath();
+      ctx.arc(x,y,r,sAngle,eAngle);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
+	}
+
+// ALL LINES...	
+function main_draw(){
+line(70,70,140,140);                           //first slant-left upper
+line(width-70,70,width-140,140);               //second slant-right upper
+line(70,height-70,140,height-140);             //third slant-left lower
+line(width-70,height-70,width-140,height-140); //fourth slant-right lower
+line(110,83,400,83);                      //upper first line
+line(110,99,400,99);                      //upper second line
+line(110,height-99,width-110,height-99);  //lower first line
+line(110,height-83,width-110,height-83);  //lower second line
+line(98,109,98,height-109);               //left first line
+line(82,109,82,height-109);               //left second line  
+line(width-98,109,width-98,height-109);   //right first line
+line(width-82,109,width-82,height-109);   //right second line
+
+// ALL CIRCLES AND ARCS...
+arc(32, 32,15, 0, 2 * Math.PI,"#b3ccff");             // top left corner
+arc(32, width-32,15, 0, 2 * Math.PI,"#b3ccff");       // bottom left corner
+arc(height-32, 32,15, 0, 2 * Math.PI,"#b3ccff");      // top right corner
+arc(height-32, width-32,15, 0, 2 * Math.PI,"##b3ccff");// bottom rigth corner
+
+arc(100, 100,4, 0, 2 * Math.PI,"white");               //top left line center
+arc(100, height-100,4, 0, 2 * Math.PI,"white");        //bottom left line center
+arc(width-100, 100,4, 0, 2 * Math.PI,"white");         //top right line center
+arc(width-100, height-100,4, 0, 2 * Math.PI,"white");  //bottom right line center
+
+arc(110, 91,8, 0, 2 * Math.PI,"red");
+arc(width-110, 91,8, 0, 2 * Math.PI,"red");
+arc(110, height-91,8, 0, 2 * Math.PI,"red");
+arc(width-110, height-91,8, 0, 2 * Math.PI,"red");
+arc(90, 109,8, 0, 2 * Math.PI,"red");
+arc(90, height-109,8, 0, 2 * Math.PI,"red");
+arc(width-90, height-109,8, 0, 2 * Math.PI,"red");
+arc(width-90, 109,8, 0, 2 * Math.PI,"red");
+
+arc(width-140, 140,15,0, 1.5 * Math.PI,"#ff8000");                  //top right arc
+arc(width-140, height-140,15,0.5 * Math.PI, 0 * Math.PI,"#ff8000"); //bottom right arc
+arc(140, height-140,15, 1 * Math.PI,0.5 * Math.PI,"#ff8000");       //bottom left arc
+arc(140, 140,15, 1.5 * Math.PI,1 * Math.PI,"#ff8000");              //top left arc
+
+arc(width/2, height/2,10, 0, 2 * Math.PI,"red");
+arc(width/2, height/2, 40, 0, 2 * Math.PI, "#ff8000");
+arc(width/2, height/2, 45, 0, 2 * Math.PI, "#ff8000");
+arc(width/2, height/2, 40, 0, 2 * Math.PI, "#ff8000");
+arc(width/2, height/2,10, 0, 2 * Math.PI,"red");
+}
+/*
+
+       function draw() {
+            ctx.beginPath();
+            ctx.arc(x, y, 15, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(250,0,0,0.4)';
+            ctx.fill();
+
+            x += 10;
+            y += 10;
+            draw();
+            //ctx.clearRect(0,0,can.width,can.height);
+        }
+        draw();
+        */
+var cutCircle = function(context, x, y, radius){
+    context.globalCompositeOperation = 'source-atop'
+    
+    context.fillStyle = "#ff8000";
+    context.fill();
+}
+
+
+function draw1(){
+    
+	main_draw();
+	ctx.beginPath();
+    ctx.arc(x, y, 15, 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(250,0,0,0.4)';
+    ctx.fill();
+    if((x + vx + r > (width-width/30)) || (x + vx - r < (width/30)) ){
+    	vx = -vx;
+    }
+    if((y + vy + r > (height-height/30)) || (y + vy - r < (height/30)) ){
+    	vy = -vy;
+    }
+
+    x += vx;
+    y += vy;
+    
+
+
+}
+
+
+main_draw();
+draw1();
+
+//Select Category, Search Space
+//Sr.No., Roll No., Nmae, Age, Grade, Class
+  
+
+c.onclick = function(){
+	cutCircle(ctx, x, y, r);
+    main_draw();
+	draw1();
+}
+c.ondrag = function(){
+
+}
+
+function velocityUpdate(type){
+  if(type == 'up'){
+    vx += 1;
+    vy -= 1;
+    
+  }
+  else{
+    vx -= 1;
+    vy += 1;
+  }
+}
+
+
+
+var velocityInc = document.getElementById('velocityInc');
+c.addEventListener('click', function(){velocityUpdate('up')}, false);
+
+var velocityDec = document.getElementById('velocityDec');
+c.addEventListener('click', function(){velocityUpdate('down')}, false);
+
+
+</script>
+<button id = "velocityInc" type = "button">Velocity++</button>
+<button id = "velocityDec" type = "button">Velocity--</button>
+</body>
+</html>
+
+

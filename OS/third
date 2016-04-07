@@ -1,0 +1,15 @@
+echo "Enter two numbers"
+read n1 n2
+sum=$((n1+n2))
+echo "The sum is $sum"echo "Enter three numbers: "
+read a b c
+l=$a
+if [ $b -gt $l ]
+then 
+l=$b
+fi
+if [ $c -gt $l ]
+then 
+l=$c
+fi
+echo  "Largest of $a $b $c is $l"

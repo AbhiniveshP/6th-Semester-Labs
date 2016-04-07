@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Carromboard</title>
+</head>
+<body>
+<div id="game">
+<script>
+var WIDTH=510, HEIGHT=510, pi=Math.PI;
+var EXTENDED_WIDTH = WIDTH + 100;
+var leftArrow=37, rightArrow=39;
+var upArrow=65, downArrow=68;
+var canvas, ctx, keystate;
+var strikerRadius = 13;
+var minimumLineWidth = 0.5;
+var coinRadius = 10;
+var RED = "red";
+var WHITE = "white";
+var YELLOW = "yellow";
+var GREY = "grey";
+var YELLOW_GREEN = "#ffcc00";
+var BLACK = "black";
+var BLUE = "blue";
+var force = 0;
+var step_mov = 7;
+var step_for = 0.01;
+var coin_speed = 2;
+var maxSpeed = 20;
+var drawing_force = 0;
+var mousePos = {};
+var movable = true;
+var drawMouse = true;
+var keyPressed = false;
+var keyReleased = false;
+var size=WIDTH;
+var boder=10;
+var goal=10;
+var sw=20;
+var sd=80;
+var r1=10;
+var r2=60;
+var r3=25;
+var Xa=160;
+var Ya=160;
+var e_val = 1
+var horizontalDist=sd+sw,fric=0.98;
+function circles(x,y,r,color){
+	this.x=x;
+	this.y=y;
+	this.r=r;
+	this.color = color;
+}
+
+
+
+function draw_cl(c){
+
+	//ctx.moveTo(c.x,c.y);
+	ctx.fillStyle = c.color;
+	ctx.arc(c.x,c.y,c.r,0,Math.PI*2,true);
+	ctx.fill();
+
+}
+
+function sqs(x,y,size,color)
+{
+	this.x=x;
+	this.y=y;
+	this.size=size;
+	this.color=color;
+
+}
+
+function draw_sq(c){
+	ctx.moveTo(c.x,c.y);
+	ctx.fillStyle = c.color;
+	ctx.fillRect(c.x,c.y,c.size,c.size);
+	ctx.fill();
+
+}
+
+function lines(x,y,x1,y1,w)
+{
+	this.x=x;
+	this.y=y;
+	this.x1=x1;
+	this.y1=y1;
+	this.w=w;
+}
+
+function draw_line(c)
+{	ctx.lineWidth = c.w;
+	ctx.moveTo(c.x,c.y);
+	ctx.lineTO(c.x1,c.y1);
+}
+function arcs(x,y,r){
+	this.x=x;
+	this.y=y;
+	this.r=r;
+	//this.color=color;
+}
+function draw_arcs(c)
+{
+	ctx.beginPath();
+	//ctx.moveTo(c.x,c.y);
+	//ctx.fillStyle = c.color;
+	ctx.arc(c.x,c.y,c.r,0,2*Math.PI,false);
+	ctx.stroke();
+	//ctx.fill();
+
+}
+
+function draw_arcs1(c)
+{
+	ctx.beginPath();
+	//ctx.moveTo(c.x,c.y);
+	//ctx.fillStyle = c.color;
+	ctx.arc(c.x,c.y,c.r,a1,b1,false);
+	ctx.stroke();
+	//ctx.fill();
+
+}
+function arcs1(x,y,r,a1,b1){
+	this.x=x;
+	this.y=y;
+	this.r=r;
+	this.a1=a1;
+	this.b1=b1;
+	//this.color=color;
+}
+var leftWindowLimit = 0.25*WIDTH;
+var rightWindowLimit = 0.75*WIDTH;
+function drawCircle(x, y, radius, color){
+	ctx.beginPath();
+	ctx.arc(x, y, radius, 0, 2*pi, false);
+	ctx.closePath();
+	ctx.fillStyle = color;
+	ctx.lineWidth = minimumLineWidth;
+	ctx.fill();
+	ctx.stroke();
+}
+var movableElement =  function (x, y, radius, color){
+	this.x = x;
+	this.y = y;
+	this.radius = radius;
+	this.color = color;
+};
+movableElement.prototype.mass = null;
+movableElement.prototype.update= function() {
+}; 
+movableElement.prototype.draw = function() {
+	drawCircle(this.x, this.y, this.radius, this.color);
+};
+var striker = new movableElement(null, null, strikerRadius, GREY);
+var coin = new movableElement(null, null, coinRadius, WHITE);
+striker.update = function  () {
+	if(movable){
+	if(keystate[leftArrow]){
+		if(this.x > leftWindowLimit){
+			this.x -= step_mov;
+		}
+	}
+	if(keystate[rightArrow]){
+		if(this.x < rightWindowLimit){
+			this.x += step_mov;
+		}
+	}
+}
+function main () {
+	canvas = document.createElement("canvas");
+	canvas.width = EXTENDED_WIDTH;
+	canvas.height = HEIGHT;
+	ctx = canvas.getContext("2d");
+	document.body.appendChild(canvas);
+	keystate = {};
+	document.addEventListener("keydown", function  (event) {
+		keystate[event.keyCode] = true;
+	});
+	document.addEventListener("keyup", function  (event) {
+		delete keystate[event.keyCode];
+	});
+	init();
+	canvas.addEventListener("mousemove", function  (event) {
+		mousePos = getMousePos(canvas, event);
+	});
+	var loop = function() {
+		update();
+		draw();
+		window.requestAnimationFrame(loop, canvas);
+	};
+	window.requestAnimationFrame(loop, canvas);
+}
+function init () {
+	striker.x = WIDTH/2 ;
+	striker.y = HEIGHT - 90;
+	coin.x = WIDTH/2;
+	coin.y = HEIGHT/2;
+}
+function update () {
+	checkCollision();
+	striker.update();
+	coin.update();
+	if(!keyReleased) {
+		mov_force.update();
+	}
+}
+function draw() {
+    ctx.fillRect(0,0, EXTENDED_WIDTH, HEIGHT);
+    ctx.fillStyle = WHITE;
+    ctx.save();
+	var sq = new sqs(0,0,size,"#883300");
+	draw_sq(sq);
+	var sq = new sqs(boder,boder,size-2*boder,"#FFCC77");
+	draw_sq(sq);
+
+	ctx.moveTo(boder+2*goal,boder+goal);
+	var g = new circles(boder+goal,boder+goal,goal,"#000000");
+	draw_cl(g);
+	ctx.moveTo(size-boder,boder+goal);
+	var g = new circles(size-goal-boder,goal+boder,goal,"#000000");
+	draw_cl(g);
+	ctx.moveTo(boder+2*goal,size-goal-boder);
+	var g = new circles(boder+goal,size-goal-boder,goal,"#000000");
+	draw_cl(g);
+	ctx.moveTo(size-boder,size-goal-boder);
+	var g = new circles(size-goal-boder,size-goal-boder,goal,"#000000");
+	draw_cl(g);
+
+
+	ctx.moveTo(size/2+r2,size/2);
+	var a = new arcs(size/2,size/2,r2);
+	draw_arcs(a);
+
+
+	ctx.lineWidth=5;
+	ctx.moveTo(size/2+r2-10,size/2);
+	var a = new arcs(size/2,size/2,r2-10);
+	draw_arcs(a);
+
+	ctx.moveTo(size/2+r1,size/2);
+	ctx.lineWidth=1;
+	var a = new arcs(size/2,size/2,r1);
+	draw_arcs(a);
+
+
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(size/2+r1-3,size/2);
+	var a = new arcs(size/2,size/2,r1-3);
+	draw_arcs(a);
+	ctx.fill();
+
+	ctx.beginPath();
+	ctx.lineWidth=3;
+	ctx.moveTo(horizontalDist+sw/2,sd);
+	ctx.lineTo(size-(horizontalDist+sw/2),sd);
+	ctx.moveTo(size-sd,horizontalDist+sw/2);
+	ctx.lineTo(size-sd,size-(horizontalDist+sw/2));
+	ctx.moveTo(horizontalDist+sw/2,size-sd);                                  //Draw 4 Stripe Base line
+	ctx.lineTo(size-(horizontalDist+sw/2),size-sd);
+	ctx.moveTo(sd,horizontalDist+sw/2);
+	ctx.lineTo(sd,size-(horizontalDist+sw/2));
+	ctx.stroke();
+
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(horizontalDist+sw,sd+sw/2);
+	var a = new arcs(horizontalDist+sw/2,sd+sw/2,sw/2);
+	draw_arcs(a);
+	ctx.fill();
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(size-horizontalDist,sd+sw/2,"#FF3333");
+	var a = new arcs(size-horizontalDist-sw/2,sd+sw/2,sw/2);
+	draw_arcs(a);
+	ctx.fill();
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(size-sd,horizontalDist+sw/2);
+	var a = new arcs(size-sd-sw/2,horizontalDist+sw/2,sw/2);
+	draw_arcs(a);
+	ctx.fill();
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(size-sd,size-(horizontalDist+sw/2));
+	var a = new arcs(size-sd-sw/2,size-(horizontalDist+sw/2),sw/2);
+	draw_arcs(a);
+	ctx.fill();
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(size-horizontalDist,size-sd-sw/2);
+	var a = new arcs(size-horizontalDist-sw/2,size-sd-sw/2,sw/2);
+	draw_arcs(a);
+	ctx.fill();
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(horizontalDist+sw,size-sd-sw/2);
+	var a = new arcs(horizontalDist+sw/2,size-sd-sw/2,sw/2);
+	draw_arcs(a);
+	ctx.fill();
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(sd+sw,size-horizontalDist-sw/2);
+	var a = new arcs(sd+sw/2,size-horizontalDist-sw/2,sw/2);
+	draw_arcs(a);
+	ctx.fill();
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(sd+sw,horizontalDist+sw/2);
+	var a = new arcs(sd+sw/2,size-horizontalDist-sw/2,sw/2);
+	draw_arcs(a);
+	ctx.fill();
+	ctx.fillStyle="#FF3333";
+	ctx.moveTo(sd+sw,horizontalDist+sw/2);
+	var a = new arcs(sd+sw/2,horizontalDist+sw/2,sw/2);
+	draw_arcs(a);
+	ctx.fill();
+
+
+	ctx.beginPath();
+	ctx.lineWidth=1;
+	ctx.moveTo(horizontalDist+sw/2,sd+sw);
+	ctx.lineTo(size-(horizontalDist+sw/2),sd+sw);
+	ctx.moveTo(size-sd-sw,horizontalDist+sw/2);
+	ctx.lineTo(size-sd-sw,size-(horizontalDist+sw/2));
+	ctx.moveTo(horizontalDist+sw/2,size-sd-sw);                                  //Draw 4 Stripe Base line
+	ctx.lineTo(size-(horizontalDist+sw/2),size-sd-sw);
+	ctx.moveTo(sd+sw,horizontalDist+sw/2);
+	ctx.lineTo(sd+sw,size-(horizontalDist+sw/2));
+	ctx.stroke();
+
+	ctx.beginPath();
+	ctx.moveTo(Xa+r3/Math.sqrt(2),Ya+r3/Math.sqrt(2));
+	ctx.lineTo(Xa-horizontalDist,Ya-horizontalDist);
+	ctx.moveTo(size-(Xa+r3/Math.sqrt(2)),Ya+r3/Math.sqrt(2));
+	ctx.lineTo(size-(Xa-horizontalDist),Ya-horizontalDist);
+	ctx.moveTo(size-(Xa+r3/Math.sqrt(2)),size-(Xa+r3/Math.sqrt(2)));
+	ctx.lineTo(size-(Xa-horizontalDist),size-(Xa-horizontalDist));
+	ctx.moveTo(Xa+r3/Math.sqrt(2),size-(Xa+r3/Math.sqrt(2)));
+	ctx.lineTo(Xa-horizontalDist,size-(Xa-horizontalDist));
+	ctx.stroke();
+
+	ctx.beginPath();
+	ctx.moveTo(Xa,Ya-r3);
+	ctx.arc(Xa,Ya,r3,3*Math.PI/2,Math.PI);
+	ctx.moveTo(size-Xa+r3,Ya);
+	ctx.arc(size-Xa,Ya,r3,0,3*Math.PI/2);                                           //Draw back circle of arrow
+	ctx.moveTo(size-Xa+r3,size-Ya);
+	ctx.arc(size-Xa,size-Ya,r3,0,Math.PI/2,true);
+	ctx.moveTo(Xa-r3,size-Ya);
+	ctx.arc(Xa,size-Ya,r3,Math.PI,Math.PI/2);
+	ctx.stroke();
+	//ctx.fillRect(0, 0, EXTENDED_WIDTH, HEIGHT);
+	//ctx.fillStyle = WHITE;
+	//ctx.save();
+	striker.draw();
+	coin.draw();
+	mov_force.draw();
+	mouseDraw();
+	ctx.restore();
+}	
+main();
+</script>
+</div>
+</body>
+</html>
